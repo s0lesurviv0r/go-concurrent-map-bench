@@ -26,15 +26,15 @@ Wherever possible, the number of shards for a map is set to 32.
 
 ### Results
 ```
-BenchmarkUnshardedSingleMutex/Get-16                     2068736               591.3 ns/op
-BenchmarkUnshardedSingleMutex/Set-16                      800686              1599 ns/op
-BenchmarkUnshardedSingleMutex/Mix-16                     1423275               796.4 ns/op
-BenchmarkShardedMultiMutexMap/Get-16                     1986720               652.0 ns/op
-BenchmarkShardedMultiMutexMap/Set-16                      765225              1463 ns/op
-BenchmarkShardedMultiMutexMap/Mix-16                     1637143               722.8 ns/op
-BenchmarkShardedMultiRWMutexMap/Get-16                   1758175               624.4 ns/op
-BenchmarkShardedMultiRWMutexMap/Set-16                    799548              1530 ns/op
-BenchmarkShardedMultiRWMutexMap/Mix-16                   1597490               809.7 ns/op
+BenchmarkUnshardedSingleMutex/Get-16                             2068736               591.3 ns/op
+BenchmarkUnshardedSingleMutex/Set-16                              800686              1599 ns/op
+BenchmarkUnshardedSingleMutex/Mix-16                             1423275               796.4 ns/op
+BenchmarkShardedMultiMutexMap/Get-16                             1986720               652.0 ns/op
+BenchmarkShardedMultiMutexMap/Set-16                              765225              1463 ns/op
+BenchmarkShardedMultiMutexMap/Mix-16                             1637143               722.8 ns/op
+BenchmarkShardedMultiRWMutexMap/Get-16                           1758175               624.4 ns/op
+BenchmarkShardedMultiRWMutexMap/Set-16                            799548              1530 ns/op
+BenchmarkShardedMultiRWMutexMap/Mix-16                           1597490               809.7 ns/op
 BenchmarkShardedMultiSegragatedRWMutexMap/Get-16                 1995408               623.1 ns/op
 BenchmarkShardedMultiSegragatedRWMutexMap/Set-16                  807332              1510 ns/op
 BenchmarkShardedMultiSegragatedRWMutexMap/Mix-16                 1615689               759.7 ns/op
