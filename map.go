@@ -11,23 +11,23 @@ import (
 // ConcurrentMap is the interface all of our
 // concurrently accessible maps should conform to
 type ConcurrentMap interface {
-	Get(string) (string, bool)
-	Set(string, string)
+	Get(string) (interface{}, bool)
+	Set(string, interface{})
 }
 
 type UnshardedSingleMutexMap struct {
 	sync.Mutex
-	m map[string]string
+	m map[string]interface{}
 }
 
-func (m *UnshardedSingleMutexMap) Get(key string) (string, bool) {
+func (m *UnshardedSingleMutexMap) Get(key string) (interface{}, bool) {
 	m.Lock()
 	val, exists := m.m[key]
 	m.Unlock()
 	return val, exists
 }
 
-func (m *UnshardedSingleMutexMap) Set(key, value string) {
+func (m *UnshardedSingleMutexMap) Set(key string, value interface{}) {
 	m.Lock()
 	m.m[key] = value
 	m.Unlock()
@@ -35,23 +35,23 @@ func (m *UnshardedSingleMutexMap) Set(key, value string) {
 
 func NewUnshardedSingleMutexMap() *UnshardedSingleMutexMap {
 	return &UnshardedSingleMutexMap{
-		m: make(map[string]string),
+		m: make(map[string]interface{}),
 	}
 }
 
 type UnshardedSingleRWMutexMap struct {
 	sync.RWMutex
-	m map[string]string
+	m map[string]interface{}
 }
 
-func (m *UnshardedSingleRWMutexMap) Get(key string) (string, bool) {
+func (m *UnshardedSingleRWMutexMap) Get(key string) (interface{}, bool) {
 	m.RLock()
 	val, exists := m.m[key]
 	m.RUnlock()
 	return val, exists
 }
 
-func (m *UnshardedSingleRWMutexMap) Set(key, value string) {
+func (m *UnshardedSingleRWMutexMap) Set(key string, value interface{}) {
 	m.Lock()
 	m.m[key] = value
 	m.Unlock()
@@ -59,20 +59,20 @@ func (m *UnshardedSingleRWMutexMap) Set(key, value string) {
 
 func NewUnshardedSingleRWMutexMap() *UnshardedSingleRWMutexMap {
 	return &UnshardedSingleRWMutexMap{
-		m: make(map[string]string),
+		m: make(map[string]interface{}),
 	}
 }
 
 type mutexShard struct {
 	sync.Mutex
-	m map[string]string
+	m map[string]interface{}
 }
 
 type ShardedMultiMutexMap struct {
 	shards []*mutexShard
 }
 
-func (m *ShardedMultiMutexMap) Get(key string) (string, bool) {
+func (m *ShardedMultiMutexMap) Get(key string) (interface{}, bool) {
 	shardIdx := getShardIndex(key, len(m.shards))
 	shard := m.shards[shardIdx]
 	shard.Lock()
@@ -81,7 +81,7 @@ func (m *ShardedMultiMutexMap) Get(key string) (string, bool) {
 	return val, exists
 }
 
-func (m *ShardedMultiMutexMap) Set(key, value string) {
+func (m *ShardedMultiMutexMap) Set(key string, value interface{}) {
 	shardIdx := getShardIndex(key, len(m.shards))
 	shard := m.shards[shardIdx]
 	shard.Lock()
@@ -93,7 +93,7 @@ func NewShardedMultiMutexMap(shardCount int) *ShardedMultiMutexMap {
 	shards := make([]*mutexShard, shardCount, shardCount)
 	for i := 0; i < shardCount; i++ {
 		shards[i] = &mutexShard{
-			m: make(map[string]string),
+			m: make(map[string]interface{}),
 		}
 	}
 
@@ -104,14 +104,14 @@ func NewShardedMultiMutexMap(shardCount int) *ShardedMultiMutexMap {
 
 type rwmutexShard struct {
 	sync.RWMutex
-	m map[string]string
+	m map[string]interface{}
 }
 
 type ShardedMultiRWMutexMap struct {
 	shards []*rwmutexShard
 }
 
-func (m *ShardedMultiRWMutexMap) Get(key string) (string, bool) {
+func (m *ShardedMultiRWMutexMap) Get(key string) (interface{}, bool) {
 	shardIdx := getShardIndex(key, len(m.shards))
 	shard := m.shards[shardIdx]
 	shard.RLock()
@@ -120,7 +120,7 @@ func (m *ShardedMultiRWMutexMap) Get(key string) (string, bool) {
 	return val, exists
 }
 
-func (m *ShardedMultiRWMutexMap) Set(key, value string) {
+func (m *ShardedMultiRWMutexMap) Set(key string, value interface{}) {
 	shardIdx := getShardIndex(key, len(m.shards))
 	shard := m.shards[shardIdx]
 	shard.Lock()
@@ -132,7 +132,7 @@ func NewShardedMultiRWMutexMap(shardCount int) *ShardedMultiRWMutexMap {
 	shards := make([]*rwmutexShard, shardCount, shardCount)
 	for i := 0; i < shardCount; i++ {
 		shards[i] = &rwmutexShard{
-			m: make(map[string]string),
+			m: make(map[string]interface{}),
 		}
 	}
 
@@ -145,11 +145,11 @@ func NewShardedMultiRWMutexMap(shardCount int) *ShardedMultiRWMutexMap {
 // map that, unlike other types, keeps shard RW Mutexes
 // segragated from the actual data shards
 type ShardedMultiSegregatedRWMutexMap struct {
-	shards []map[string]string
+	shards []map[string]interface{}
 	mu     []sync.RWMutex
 }
 
-func (m *ShardedMultiSegregatedRWMutexMap) Get(key string) (string, bool) {
+func (m *ShardedMultiSegregatedRWMutexMap) Get(key string) (interface{}, bool) {
 	shardIdx := getShardIndex(key, len(m.shards))
 	shard := m.shards[shardIdx]
 	m.mu[shardIdx].RLock()
@@ -158,7 +158,7 @@ func (m *ShardedMultiSegregatedRWMutexMap) Get(key string) (string, bool) {
 	return val, exists
 }
 
-func (m *ShardedMultiSegregatedRWMutexMap) Set(key, value string) {
+func (m *ShardedMultiSegregatedRWMutexMap) Set(key string, value interface{}) {
 	shardIdx := getShardIndex(key, len(m.shards))
 	shard := m.shards[shardIdx]
 	m.mu[shardIdx].Lock()
@@ -167,9 +167,9 @@ func (m *ShardedMultiSegregatedRWMutexMap) Set(key, value string) {
 }
 
 func NewShardedMultiSegragatedRWMutexMap(shardCount int) *ShardedMultiSegregatedRWMutexMap {
-	shards := make([]map[string]string, shardCount, shardCount)
+	shards := make([]map[string]interface{}, shardCount, shardCount)
 	for i := 0; i < shardCount; i++ {
-		shards[i] = make(map[string]string)
+		shards[i] = make(map[string]interface{})
 	}
 
 	return &ShardedMultiSegregatedRWMutexMap{
@@ -182,15 +182,11 @@ type OrcamanLibrary struct {
 	internal cmap.ConcurrentMap
 }
 
-func (m *OrcamanLibrary) Get(key string) (string, bool) {
-	val, exists := m.internal.Get(key)
-	if exists == false || val == nil {
-		return "", false
-	}
-	return val.(string), exists
+func (m *OrcamanLibrary) Get(key string) (interface{}, bool) {
+	return m.internal.Get(key)
 }
 
-func (m *OrcamanLibrary) Set(key, value string) {
+func (m *OrcamanLibrary) Set(key string, value interface{}) {
 	m.internal.Set(key, value)
 }
 
@@ -204,15 +200,15 @@ type FanliaoLibrary struct {
 	internal *concurrent.ConcurrentMap
 }
 
-func (m *FanliaoLibrary) Get(key string) (string, bool) {
+func (m *FanliaoLibrary) Get(key string) (interface{}, bool) {
 	val, err := m.internal.Get(key)
 	if err != nil || val == nil {
 		return "", false
 	}
-	return val.(string), true
+	return val, true
 }
 
-func (m *FanliaoLibrary) Set(key, value string) {
+func (m *FanliaoLibrary) Set(key string, value interface{}) {
 	m.internal.Put(key, value)
 }
 
@@ -226,15 +222,11 @@ type TidwallLibrary struct {
 	internal *shardmap.Map
 }
 
-func (m *TidwallLibrary) Get(key string) (string, bool) {
-	val, exists := m.internal.Get(key)
-	if !exists || val == nil {
-		return "", false
-	}
-	return val.(string), true
+func (m *TidwallLibrary) Get(key string) (interface{}, bool) {
+	return m.internal.Get(key)
 }
 
-func (m *TidwallLibrary) Set(key, value string) {
+func (m *TidwallLibrary) Set(key string, value interface{}) {
 	m.internal.Set(key, value)
 }
 
@@ -248,15 +240,11 @@ type SyncMap struct {
 	sync.Map
 }
 
-func (m *SyncMap) Get(key string) (string, bool) {
-	val, exists := m.Load(key)
-	if exists == false || val == nil {
-		return "", false
-	}
-	return val.(string), exists
+func (m *SyncMap) Get(key string) (interface{}, bool) {
+	return m.Load(key)
 }
 
-func (m *SyncMap) Set(key, value string) {
+func (m *SyncMap) Set(key string, value interface{}) {
 	m.Store(key, value)
 }
 
