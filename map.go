@@ -3,6 +3,8 @@ package main
 import (
 	"sync"
 
+	"github.com/cornelk/hashmap"
+	"github.com/dustinxie/lockfree"
 	"github.com/fanliao/go-concurrentMap"
 	"github.com/orcaman/concurrent-map"
 	"github.com/tidwall/shardmap"
@@ -233,6 +235,42 @@ func (m *TidwallLibrary) Set(key string, value interface{}) {
 func NewTidwallLibrary() *TidwallLibrary {
 	return &TidwallLibrary{
 		internal: &shardmap.Map{},
+	}
+}
+
+type CornelkLibrary struct {
+	internal *hashmap.Map[string, interface{}]
+}
+
+func (m *CornelkLibrary) Get(key string) (interface{}, bool) {
+	return m.internal.Get(key)
+}
+
+func (m *CornelkLibrary) Set(key string, value interface{}) {
+	m.internal.Set(key, value)
+}
+
+func NewCornelkLibrary() *CornelkLibrary {
+	return &CornelkLibrary{
+		internal: hashmap.NewSized[string, interface{}](2_000_000),
+	}
+}
+
+type DustinxieLibrary struct {
+	internal lockfree.HashMap
+}
+
+func (m *DustinxieLibrary) Get(key string) (interface{}, bool) {
+	return m.internal.Get(key)
+}
+
+func (m *DustinxieLibrary) Set(key string, value interface{}) {
+	m.internal.Set(key, value)
+}
+
+func NewDustinxieLibrary() *DustinxieLibrary {
+	return &DustinxieLibrary{
+		internal: lockfree.NewHashMap(),
 	}
 }
 

@@ -101,6 +101,16 @@ func TestTidwallLibrary(t *testing.T) {
 	test(t, NewTidwallLibrary())
 }
 
+/*
+func TestCornelkLibrary(t *testing.T) {
+	test(t, NewCornelkLibrary())
+}
+*/
+
+func TestDustinxieLibrary(t *testing.T) {
+	test(t, NewDustinxieLibrary())
+}
+
 func TestSyncMap(t *testing.T) {
 	test(t, NewSyncMap())
 }
@@ -156,7 +166,7 @@ func BenchmarkUnshardedSingleMutex(b *testing.B) {
 	benchmark(b, NewUnshardedSingleMutexMap())
 }
 
-func BenchmarktUnshardedSingleRWMutex(b *testing.B) {
+func BenchmarkUnshardedSingleRWMutex(b *testing.B) {
 	benchmark(b, NewUnshardedSingleRWMutexMap())
 }
 
@@ -182,6 +192,16 @@ func BenchmarkFanLiaoLibrary(b *testing.B) {
 
 func BenchmarkTidwallLibrary(b *testing.B) {
 	benchmark(b, NewTidwallLibrary())
+}
+
+/*
+func BenchmarkCornelkLibrary(b *testing.B) {
+	benchmark(b, NewCornelkLibrary())
+}
+*/
+
+func BenchmarkDustinxieLibrary(b *testing.B) {
+	benchmark(b, NewDustinxieLibrary())
 }
 
 func BenchmarkSyncMap(b *testing.B) {
