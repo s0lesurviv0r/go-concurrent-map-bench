@@ -2,8 +2,10 @@ package main
 
 import (
 	"math/rand"
+	"runtime"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -117,10 +119,29 @@ func TestSyncMap(t *testing.T) {
 
 // benchmarkMapSets performs sets concurrently
 func benchmarkMapSet(b *testing.B, m ConcurrentMap) {
+
+	// Prefill the sets we will perform on the
+	// map
+	setKeys := make([]string, NUM_KEYS)
+	for i := 0; i < NUM_KEYS; i++ {
+		setKeys[i] = getRand(15)
+	}
+
+	setValues := make([]string, NUM_KEYS)
+	for i := 0; i < NUM_KEYS; i++ {
+		setValues[i] = getRand(15)
+	}
+
+	ptr := uint32(0)
+
+	runtime.GC()
+	b.ResetTimer()
+
 	b.Run("Set", func(sb *testing.B) {
 		sb.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				m.Set(getRand(15), getRand(15))
+				atomic.AddUint32(&ptr, 1)
+				m.Set(setKeys[ptr%NUM_KEYS], setValues[ptr%NUM_KEYS])
 			}
 		})
 	})
@@ -128,10 +149,24 @@ func benchmarkMapSet(b *testing.B, m ConcurrentMap) {
 
 // benchmarkMapGet performs gets concurrently
 func benchmarkMapGet(b *testing.B, m ConcurrentMap) {
+
+	// Prefill the gets we will perform on the
+	// map
+	getKeys := make([]string, NUM_KEYS)
+	for i := 0; i < NUM_KEYS; i++ {
+		getKeys[i] = getRand(15)
+	}
+
+	ptr := uint32(0)
+
+	runtime.GC()
+	b.ResetTimer()
+
 	b.Run("Get", func(sb *testing.B) {
 		sb.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
-				_, _ = m.Get(getRand(15))
+				atomic.AddUint32(&ptr, 1)
+				_, _ = m.Get(getKeys[ptr%NUM_KEYS])
 			}
 		})
 	})
@@ -140,14 +175,42 @@ func benchmarkMapGet(b *testing.B, m ConcurrentMap) {
 // benchmarkMapMix tests alternating sets and gets in parallel.
 // This should simulate a balanced set/get load
 func benchmarkMapMix(b *testing.B, m ConcurrentMap) {
+
+	// Prefill the sets we will perform on the
+	// map
+	setKeys := make([]string, NUM_KEYS)
+	for i := 0; i < NUM_KEYS; i++ {
+		setKeys[i] = getRand(15)
+	}
+
+	setValues := make([]string, NUM_KEYS)
+	for i := 0; i < NUM_KEYS; i++ {
+		setValues[i] = getRand(15)
+	}
+
+	// Prefill the gets we will perform on the
+	// map
+	getKeys := make([]string, NUM_KEYS)
+	for i := 0; i < NUM_KEYS; i++ {
+		getKeys[i] = getRand(15)
+	}
+
+	setPtr := uint32(0)
+	getPtr := uint32(0)
+
+	runtime.GC()
+	b.ResetTimer()
+
 	b.Run("Mix", func(sb *testing.B) {
 		sb.RunParallel(func(pb *testing.PB) {
 			for pb.Next() {
 				set := false
 				if set {
-					m.Set(getRand(15), getRand(15))
+					atomic.AddUint32(&setPtr, 1)
+					m.Set(setKeys[setPtr%NUM_KEYS], setValues[setPtr%NUM_KEYS])
 				} else {
-					_, _ = m.Get(getRand(15))
+					atomic.AddUint32(&getPtr, 1)
+					_, _ = m.Get(getKeys[getPtr%NUM_KEYS])
 				}
 				set = !set
 			}
